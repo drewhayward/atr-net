@@ -12,6 +12,7 @@ from src.dataset_tools.vgvte_transformer_class import VGVTETransformer
 from src.dataset_tools.vrd_transformer_class import VRDTransformer
 from src.dataset_tools.vrr_vg_transformer_class import VrRVGTransformer
 from src.dataset_tools.svg_transformer_class import SVGTransformer
+from src.dataset_tools.gqa_transformer_class import GQATransformer
 
 TRANSFORMERS = {
     'VG200': VG200Transformer(Config('VG200', '')),
@@ -20,7 +21,8 @@ TRANSFORMERS = {
     'VGVTE': VGVTETransformer(Config('VGVTE', '')),
     'VRD': VRDTransformer(Config('VRD', '')),
     'VrR-VG': VrRVGTransformer(Config('VrR-VG', '')),
-    'sVG': SVGTransformer(Config('sVG', ''))
+    'sVG': SVGTransformer(Config('sVG', '')),
+    'GQA': GQATransformer(Config('GQA', ''))
 }
 
 
@@ -49,5 +51,5 @@ if __name__ == "__main__":
     else:
         main([
             'VG80K', 'sVG', 'VrR-VG', 'VGVTE',
-            'VGMSDN', 'VG200', 'VRD'
+            'VGMSDN', 'VG200', 'VRD', 'GQA'
         ])

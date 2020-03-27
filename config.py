@@ -29,7 +29,8 @@ ORIG_ANNOS_PATHS = {  # paths of stored original dataset annotations
     'VRD': 'datasets/VRD/',
     'VrR-VG': 'datasets/VrR-VG/',
     'sVG': 'datasets/sVG/',
-    'UnRel': 'datasets/UnRel/'
+    'UnRel': 'datasets/UnRel/',
+    'GQA': '/home/hlr/shared/data/GQA/'
 }
 
 ORIG_IMAGES_PATH = {  # paths of stored original dataset images
@@ -40,7 +41,8 @@ ORIG_IMAGES_PATH = {  # paths of stored original dataset images
     'VRD': 'VRD/images/',
     'VrR-VG': 'VG/images/',
     'sVG': 'VG/images/',
-    'UnRel': 'UnRel/images/'
+    'UnRel': 'UnRel/images/',
+    'GQA': '/home/hlr/shared/data/GQA/images/'
 }
 
 # Variables
