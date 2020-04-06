@@ -89,7 +89,7 @@ class GQATransformer(DatasetTransformer):
                 'split_id': split,
                 'height': scene['height'],
                 'width': scene['width'],
-                'im_scale': self._compute_im_scale(scene_id + '.jpg'),
+                'im_scale': self._compute_im_scale(scene_id + '.jpg')[0],
                 'objects': {
                     'names': obj_names,
                     'boxes': boxes
