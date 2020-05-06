@@ -119,8 +119,11 @@ class ObjectDetector(nn.Module):
             scores = detections[:, 4]
             bbox_pred = detections[:, :4]
             rois_label = detections[:, 5]
+            return scores, bbox_pred, rpn_loss, rcnn_bbox_loss, rois_label, detection_features
+            
+        return scores, bbox_pred, rpn_loss, rcnn_bbox_loss, rois_label, None
 
-        return scores, bbox_pred, rpn_loss, rcnn_bbox_loss, rois_label, detection_features
+
 
     def train(self, mode=True):
         """Override train to prevent modules from being trainable."""
@@ -207,7 +210,7 @@ class TrainTester(ObjDetTrainTester):
 
     def _compute_loss(self, batch, step):
         """Compute loss for current batch."""
-        scores, _, rpn_loss, rcnn_bbox_loss, rois_label = \
+        scores, _, rpn_loss, rcnn_bbox_loss, rois_label, obj_features = \
             self._net_forward(batch, step)
         loss = self.criterion(scores, rois_label) + rcnn_bbox_loss
         if self.config.train_rpn:

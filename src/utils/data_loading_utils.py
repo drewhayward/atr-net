@@ -334,7 +334,7 @@ class SGGDataLoader(torch.utils.data.DataLoader):
         """Get images of current batch."""
         im_blob = torch.stack(batch, dim=0)
         self._base_features = FEATURE_EXTRACTOR(
-            im_blob.to(torch.device("cuda:0")) if self._use_cuda else im_blob)
+            im_blob.cuda() if self._use_cuda else im_blob)
 
     def get_base_features(self, batch, step):
         """Get ROI pooling features."""
