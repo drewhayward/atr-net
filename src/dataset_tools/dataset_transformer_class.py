@@ -40,6 +40,7 @@ class DatasetTransformer():
         self._word2vec_json = base + '_word2vec.json'
         self._preddet_probability_json = base + '_preddet_probabilities.json'
         self._predcls_probability_json = base + '_predcls_probabilities.json'
+        self._sggen_json = base + '_sggen.json'
 
     def transform(self):
         """Run the transformation pipeline."""

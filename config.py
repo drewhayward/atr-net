@@ -155,6 +155,14 @@ class Config():
                 'pairs': 146.3,
                 'max_objects': 45,
             },
+            'GQA': {
+                'relations': 6.98,
+                'duplicates_filtered': 4.69,
+                'predicates_filtered': 4.45,
+                'objects': 10.87,
+                'pairs': 146.3,
+                'max_objects': 100,
+            },
             'VG80K': {
                 'relations': 21.96,
                 'duplicates_filtered': 18.89,

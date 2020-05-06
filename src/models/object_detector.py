@@ -115,12 +115,12 @@ class ObjectDetector(nn.Module):
 
         if self.mode == 'test':
             scores = self.softmax(scores)
-            detections = postprocess_dets(scores, bbox_pred, rois, im_info)
+            detections, detection_features = postprocess_dets(scores, bbox_pred, rois, im_info, pooled_features)
             scores = detections[:, 4]
             bbox_pred = detections[:, :4]
             rois_label = detections[:, 5]
 
-        return scores, bbox_pred, rpn_loss, rcnn_bbox_loss, rois_label
+        return scores, bbox_pred, rpn_loss, rcnn_bbox_loss, rois_label, detection_features
 
     def train(self, mode=True):
         """Override train to prevent modules from being trainable."""
@@ -145,7 +145,7 @@ def _smooth_l1_loss(bbox_pred, bbox_targets, bbox_inside_weights,
     return box_loss
 
 
-def postprocess_dets(scores, bboxes, rois, im_info):
+def postprocess_dets(scores, bboxes, rois, im_info, pooled_features):
     """
     Postprocess detections to get meaningful results.
 
@@ -172,6 +172,7 @@ def postprocess_dets(scores, bboxes, rois, im_info):
 
     # Class-wise nms
     detections = []
+    detection_features = []
     for cid in range(1, num_classes):
         inds = torch.nonzero(scores[:, cid] > 0.05).view(-1)
         if inds.numel() > 0:
@@ -179,6 +180,7 @@ def postprocess_dets(scores, bboxes, rois, im_info):
             _, order = torch.sort(cls_scores, 0, True)
             cls_boxes = bboxes[inds][:, cid * 4:(cid + 1) * 4]
             cls_dets = torch.cat((cls_boxes, cls_scores.unsqueeze(1)), 1)
+            # TODO: Use inds -> order -> keep to filter the pooled features
             cls_dets = cls_dets[order]
             keep = nms(cls_boxes[order, :], cls_scores[order], 0.3)
             cls_dets = cls_dets[keep.view(-1).long()]  # (keep, 5)
@@ -186,7 +188,8 @@ def postprocess_dets(scores, bboxes, rois, im_info):
             cls_dets = torch.cat((
                 cls_dets, class_ids.cuda() if use_cuda else class_ids), dim=1)
             detections.append(cls_dets)
-    return torch.cat(detections, dim=0)
+            detection_features.append(pooled_features[inds][order][keep])
+    return torch.cat(detections, dim=0), torch.cat(detection_features, dim=0)
 
 
 class TrainTester(ObjDetTrainTester):
@@ -213,8 +216,8 @@ class TrainTester(ObjDetTrainTester):
 
     def _net_outputs(self, batch, step):
         """Get network outputs for current batch."""
-        scores, bboxes, _, _, labels = self._net_forward(batch, step)
-        return scores, bboxes, labels
+        scores, bboxes, _, _, labels, obj_features = self._net_forward(batch, step)
+        return scores, bboxes, labels, obj_features
 
 
 def train_test(config):

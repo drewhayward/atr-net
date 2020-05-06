@@ -41,27 +41,54 @@ def get_box_deltas(subj_boxes, obj_boxes, pred_boxes, height, width):
     h_pred = pred_boxes[:, 1] - pred_boxes[:, 0]
     w_obj = obj_boxes[:, 3] - obj_boxes[:, 2]
     h_obj = obj_boxes[:, 1] - obj_boxes[:, 0]
+
+    # Set zero numerators to 1
+    w_subj[w_subj == 0] = 1
+    h_subj[h_subj == 0] = 1
+    w_pred[w_pred == 0] = 1
+    h_pred[h_pred == 0] = 1
+    w_obj[w_obj == 0] = 1
+    h_obj[h_obj == 0] = 1
+
     return np.stack((
-        (x_subj - x_obj) / w_subj, (y_subj - y_obj) / h_subj,
-        np.log(w_subj / w_obj), np.log(h_subj / h_obj),
-        (x_obj - x_subj) / w_obj, (y_obj - y_subj) / h_obj,
-        (x_subj - x_pred) / w_subj, (y_subj - y_pred) / h_subj,
-        np.log(w_subj / w_pred), np.log(h_subj / h_pred),
-        (x_pred - x_subj) / w_pred, (y_pred - y_subj) / h_pred,
-        (x_obj - x_pred) / w_obj, (y_obj - y_pred) / h_obj,
-        np.log(w_obj / w_pred), np.log(h_obj / h_pred),
-        (x_pred - x_obj) / w_pred, (y_pred - y_obj) / h_pred,
-        subj_boxes[:, 0] / height, subj_boxes[:, 1] / height,
-        subj_boxes[:, 2] / width, subj_boxes[:, 3] / width,
-        obj_boxes[:, 0] / height, obj_boxes[:, 1] / height,
-        obj_boxes[:, 2] / width, obj_boxes[:, 3] / width,
-        pred_boxes[:, 0] / height, pred_boxes[:, 1] / height,
-        pred_boxes[:, 2] / width, pred_boxes[:, 3] / width,
+        (x_subj - x_obj) / w_subj,
+        (y_subj - y_obj) / h_subj,
+        np.log(w_subj / w_obj),
+        np.log(h_subj / h_obj),
+        (x_obj - x_subj) / w_obj,
+        (y_obj - y_subj) / h_obj,
+        (x_subj - x_pred) / w_subj,
+        (y_subj - y_pred) / h_subj,
+        np.log(w_subj / w_pred),
+        np.log(h_subj / h_pred),
+        (x_pred - x_subj) / w_pred,
+        (y_pred - y_subj) / h_pred,
+        (x_obj - x_pred) / w_obj,
+        (y_obj - y_pred) / h_obj,
+        np.log(w_obj / w_pred),
+        np.log(h_obj / h_pred),
+        (x_pred - x_obj) / w_pred,
+        (y_pred - y_obj) / h_pred,
+        subj_boxes[:, 0] / height,
+        subj_boxes[:, 1] / height,
+        subj_boxes[:, 2] / width,
+        subj_boxes[:, 3] / width,
+        obj_boxes[:, 0] / height,
+        obj_boxes[:, 1] / height,
+        obj_boxes[:, 2] / width,
+        obj_boxes[:, 3] / width,
+        pred_boxes[:, 0] / height,
+        pred_boxes[:, 1] / height,
+        pred_boxes[:, 2] / width,
+        pred_boxes[:, 3] / width,
         w_subj * h_subj / (height * width),
         w_obj * h_obj / (height * width),
-        w_pred / w_subj, h_pred / h_subj,
-        w_pred / w_obj, h_pred / h_obj,
-        w_obj / w_subj, h_obj / h_subj
+        w_pred / w_subj,
+        h_pred / h_subj,
+        w_pred / w_obj,
+        h_pred / h_obj,
+        w_obj / w_subj,
+        h_obj / h_subj
     ), axis=1)
 
 

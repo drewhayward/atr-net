@@ -5,6 +5,7 @@ import json
 import os
 from time import time
 
+import h5py
 from matplotlib import pyplot as plt
 import numpy as np
 import torch
@@ -419,16 +420,19 @@ class ObjDetTrainTester(SGGTrainTester):
 
         # Forward pass on test set, epoch=0
         results = {}
+        feature_results = {}
         for batch in tqdm(self.data_loader):
             for step in range(len(batch['filenames'])):
-                scores, bboxes, labels = self._net_outputs(batch, step)
+                scores, bboxes, labels, obj_features = self._net_outputs(batch, step)
                 scores = scores.cpu().numpy()
                 bboxes = bboxes.cpu().numpy()
                 labels = labels.cpu().numpy()
+                obj_features = obj_features.cpu().numpy()
                 score_sort = scores.argsort()[::-1][:max_per_img]
                 labels = labels[score_sort]
                 bboxes = bboxes[score_sort]
                 scores = scores[score_sort]
+                obj_features = obj_features[score_sort]
                 # boxes: (x1, y1, x2, y2) back to (y1, y2, x1, x2)
                 bboxes = bboxes[:, (1, 3, 0, 2)]
                 filename = batch['filenames'][step]
@@ -439,11 +443,46 @@ class ObjDetTrainTester(SGGTrainTester):
                         'scores': scores.tolist(),
                         'boxes': bboxes.tolist(),
                         'labels': labels.tolist()}})
+                feature_results.update({
+                    filename: {
+                        'features': obj_features,
+                        'bboxes': bboxes
+                    }
+                })
         # Print metrics and save results
         obj_eval.print_stats()
         anno_constructor.save()
         with open(self._results_path + self._net_name + '.json', 'w') as fid:
             json.dump(results, fid)
+
+        def chunkify(l, n): 
+            for i in range(0, len(l), n):  
+                yield l[i:i + n] 
+
+        info = {}
+        for file_num, group in enumerate(chunkify(list(feature_results), 10000)):
+            # Output object features
+            h5_output_File = h5py.File(self._results_path + self._net_name + f'objects_{file_num}' + '.h5', 'w')
+            
+            feats = np.zeros((len(group), 100, 2048))
+            boxes = np.zeros((len(group), 100, 4))
+            for idx, g in enumerate(group):
+                filename, data = g
+                num_obj = data['boxes'].shape[0]
+                feats[idx, 0:num_obj, :] = data['features']
+                boxes[idx, 0:num_obj, :] = data['boxes']
+                info[filename] = {
+                    'file': file_num,
+                    'idx': idx,
+                    'objectsNum': data['boxes'].shape[0]
+                }
+
+            h5_output_File.create_dataset('bboxes', data=boxes)
+            h5_output_File.create_dataset('features', data=feats)
+
+            h5_output_File.close()
+
+
 
 
 class SGGenAnnosConstructor():

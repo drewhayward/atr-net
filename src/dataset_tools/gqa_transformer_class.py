@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+from typing import List
 
 from src.dataset_tools.dataset_transformer_class import DatasetTransformer
 
@@ -20,7 +21,8 @@ class GQATransformer(DatasetTransformer):
             self._object_json,
             self._word2vec_json,
             self._preddet_probability_json,
-            self._predcls_probability_json
+            self._predcls_probability_json,
+            self._sggen_json
         ]
         if not all(os.path.exists(anno) for anno in jsons):
             annos = self.create_relationship_json()
@@ -40,6 +42,15 @@ class GQATransformer(DatasetTransformer):
                     annos = json.load(fid)
                 self.compute_relationship_probabilities(
                     annos, predicates, objects, with_bg=True)
+            if not os.path.exists(self._sggen_json):
+                self.create_sggen_json(annos)
+
+    def create_sggen_json(self, annos: List[object]):
+        """
+        Create SG Generation JSON
+        """
+        with open(self._sggen_json, 'w') as fid:
+            json.dump(annos, fid)
 
     def create_relationship_json(self):
         self._load_dataset()
@@ -105,7 +116,12 @@ class GQATransformer(DatasetTransformer):
     def _set_annos(self):
 
         annos = self._gqa_to_annos(self._train_scene_graphs, 0)
-        annos += self._gqa_to_annos(self._train_scene_graphs, 1)
+        annos += self._gqa_to_annos(self._val_scene_graphs, 1)
+        
+        # Set both as test to get all predictions
+        annos += self._gqa_to_annos(self._train_scene_graphs, 2)
+        annos += self._gqa_to_annos(self._val_scene_graphs, 2)
+
         return annos
 
     @staticmethod
