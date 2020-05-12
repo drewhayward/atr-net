@@ -460,21 +460,21 @@ class ObjDetTrainTester(SGGTrainTester):
                 yield l[i:i + n] 
 
         info = {}
-        for file_num, group in enumerate(chunkify(list(feature_results), 10000)):
+        for file_num, group in enumerate(chunkify(list(feature_results.items()), 10000)):
             # Output object features
-            h5_output_File = h5py.File(self._results_path + self._net_name + f'objects_{file_num}' + '.h5', 'w')
+            h5_output_File = h5py.File(self._results_path + self._net_name + f'_ßobjects_{file_num}' + '.h5', 'w')
             
             feats = np.zeros((len(group), 100, 2048))
             boxes = np.zeros((len(group), 100, 4))
             for idx, g in enumerate(group):
                 filename, data = g
-                num_obj = data['boxes'].shape[0]
+                num_obj = data['bboxes'].shape[0]
                 feats[idx, 0:num_obj, :] = data['features']
-                boxes[idx, 0:num_obj, :] = data['boxes']
+                boxes[idx, 0:num_obj, :] = data['bboxes']
                 info[filename] = {
                     'file': file_num,
                     'idx': idx,
-                    'objectsNum': data['boxes'].shape[0]
+                    'objectsNum': data['bboxes'].shape[0]
                 }
 
             h5_output_File.create_dataset('bboxes', data=boxes)
@@ -482,6 +482,8 @@ class ObjDetTrainTester(SGGTrainTester):
 
             h5_output_File.close()
 
+        with open(self._results_path + self._net_name + f'_objects_info.json', 'w') as fp:
+            json.dump(info, fp)
 
 
 

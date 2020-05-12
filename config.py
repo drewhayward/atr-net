@@ -47,7 +47,7 @@ ORIG_IMAGES_PATH = {  # paths of stored original dataset images
 
 # Variables
 USE_CUDA = torch.cuda.is_available()  # whether to use GPU
-
+torch.cuda.set_device(0)
 
 class Config():
     """
@@ -272,7 +272,7 @@ class Config():
         if self._batch_size is not None:
             return self._batch_size  # custom batch size defined
         if self.task == 'objdet':
-            return 4
+            return 8
         annos_per_img = self._annos_per_img[self.dataset]
         if self.task in {'predcls', 'sgcls'}:
             annos_per_img = annos_per_img['pairs']
